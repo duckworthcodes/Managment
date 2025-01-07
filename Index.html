@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Next-Gen Project Dashboard</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.0.2/firebase-app-compat.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.0.2/firebase-firestore-compat.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+  
+  <link href="styles.css" rel="stylesheet">
+
+
+</head>
+<body>
+  <header>
+    <div class="header-content">
+      <div class="logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+          <polyline points="7.5 4.21 12 6.81 16.5 4.21"></polyline>
+          <polyline points="7.5 19.79 7.5 14.6 3 12"></polyline>
+          <polyline points="21 12 16.5 14.6 16.5 19.79"></polyline>
+          <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+          <line x1="12" y1="22.08" x2="12" y2="12"></line>
+        </svg>
+        Project Vision
+      </div>
+      <div class="header-controls">
+        <button class="button" id="refresh-data">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12a9 9 0 11-9-9c2.52 0 4.85.99 6.57 2.57L21 8M21 3v5h-5"/>
+          </svg>
+          Refresh
+        </button>
+        <button class="button" id="dark-mode-toggle">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+          </svg>
+          Theme
+        </button>
+        <button class="button login-btn" id="loginButton" onclick="window.location.href='login.html'">
+          <i class='bx bx-log-in'></i>
+          Login
+      </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="main-content">
+    <div class="filters">
+      <select id="status-filter">
+        <option value="all">All Statuses</option>
+        <option value="completed">Completed</option>
+        <option value="ongoing">Ongoing</option>
+        <option value="delayed">Delayed</option>
+      </select>
+      <select id="sprint-filter">
+        <option value="all">All Sprints</option>
+        <option value="sprint1">Sprint 1</option>
+        <option value="sprint2">Sprint 2</option>
+        <option value="sprint3">Sprint 3</option>
+      </select>
+      <select id="resource-filter">
+        <option value="all">All Resources</option>
+      </select>
+      <select id="sort-by">
+        <option value="name">Sort by Name</option>
+        <option value="progress">Sort by Progress</option>
+        <option value="status">Sort by Status</option>
+        <option value="sprint">Sort by Sprint</option>
+      </select>
+    </div>
+
+    <!-- Add Project Button -->
+<button class="button" id="add-project-btn" style="margin-left: auto;">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <path d="M12 5v14M5 12h14"/>
+  </svg>
+  Add Project
+</button>
+
+<!-- Add Project Modal -->
+<div class="modal-overlay" id="add-project-modal">
+  <div class="modal-content">
+    <h3>Add New Project</h3>
+    <form id="project-form">
+      <div class="form-group">
+        <label for="project-name">Project Name</label>
+        <input type="text" id="project-name" required>
+      </div>
+      <div class="form-group">
+        <label for="project-status">Status</label>
+        <select id="project-status" required>
+          <option value="ongoing">Ongoing</option>
+          <option value="completed">Completed</option>
+          <option value="delayed">Delayed</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="project-sprint">Sprint</label>
+        <select id="project-sprint" required>
+          <option value="1">Sprint 1</option>
+          <option value="2">Sprint 2</option>
+          <option value="3">Sprint 3</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="project-resources">Resources (comma-separated)</label>
+        <input type="text" id="project-resources" required>
+      </div>
+      <div class="form-group">
+        <label for="project-progress">Progress (%)</label>
+        <input type="number" id="project-progress" min="0" max="100" required>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="button" id="cancel-project">Cancel</button>
+        <button type="submit" class="button">Add Project</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="search-bar">
+  <input type="text" id="search-input" placeholder="Search projects by name, status, or team..." />
+</div>
+
+    <!-- Add new sorting controls after filters -->
+    <div class="sort-options">
+      <span style="color: var(--text-secondary)">Sort Direction:</span>
+      <button class="sort-direction active" id="sort-asc" title="Sort Ascending">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 4h13M3 8h9M3 12h5M7 20V8m2 12l-4-4m4 4l-4 4"/>
+        </svg>
+      </button>
+      <button class="sort-direction" id="sort-desc" title="Sort Descending">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 4h13M3 8h9M3 12h5M7 20V8m2 0l-4-4m4 4l-4 4"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="alphabet-filter" id="alphabet-filter">
+      <!-- Will be populated with A-Z buttons -->
+    </div>
+
+    <div class="dashboard-stats">
+      <div class="stat-card">
+        <div class="stat-label">Total Projects</div>
+        <div class="stat-value" id="total-projects">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Ongoing Projects</div>
+        <div class="stat-value" id="ongoing-projects">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Completed Projects</div>
+        <div class="stat-value" id="completed-projects">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Delayed Projects</div>
+        <div class="stat-value" id="delayed-projects">0</div>
+      </div>
+    </div>
+
+    <div class="charts-container">
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3>Project Progress</h3>
+        </div>
+        <canvas id="progressChart"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3>Resource Allocation</h3>
+        </div>
+        <canvas id="resourceChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Modified project list container -->
+    <div id="project-list">
+      <!-- Project groups will be populated here -->
+    </div>
+  </div>
+
+  <div class="loading-overlay" id="loading-overlay">
+    <div class="loader"></div>
+  </div>
+
+  <script src="app.js">
+    </script>
+      
+</body>
+</html>

@@ -1,0 +1,50 @@
+    apiKey: "AIzaSyARbW2lDKcZucJbo8lrwARvgax4Cy0NfuA",
+    authDomain: "naaaabruh-ad282.firebaseapp.com",
+    projectId: "naaaabruh-ad282",
+    storageBucket: "naaaabruh-ad282.firebasestorage.app",
+    messagingSenderId: "555946191902",
+    appId: "1:555946191902:web:01ef40fb4e42acdf88120f",
+    measurementId: "G-WWNFXHJ4XX"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
